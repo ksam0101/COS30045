@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About Us · Appliance Energy Consumption Website</title>
+  <meta name="description" content="About the project, the audience, the TV energy data, its limitations and ethics, and how generative AI was used.">
+  <link rel="icon" type="image/png" href="assets/img/logo.png">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="brand" href="index.html" aria-label="Appliance Energy Consumption — back to Home">
+        <img src="assets/img/logo.png" alt="Power logo: a lightning bolt in a circle" width="52" height="52">
+        <span>Appliance Energy<small>CONSUMPTION · AUSTRALIA</small></span>
+      </a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="televisions.html">Televisions</a></li>
+          <li><a href="about.html" aria-current="page">About Us</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="wrap">
+        <span class="eyebrow">About Us</span>
+        <h1>About this project</h1>
+        <p class="lead">A student data-visualisation project that turns the Australian TV energy-rating register into a story households can use.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="narrow prose">
+        <h2>Who made this</h2>
+        <p>This website was created by <strong>Tran Ngo Anh Khoi</strong> for <strong>COS30045 Data Visualisation</strong> at Swinburne University of Technology (Vietnam). It covers Exercise 0.2 (building the website) and Exercise 3 (communicating data insights).</p>
+
+        <h2 id="story">The data story</h2>
+        <h3>Audience</h3>
+        <p>Australian households buying or replacing a television. They are not technical, they are price-conscious, and they usually compare a few models quickly. Many already know what screen size they want and are unsure how much the choice will add to their electricity bill.</p>
+        <h3>What they want to know</h3>
+        <ul>
+          <li>How much does screen size change a TV's energy use?</li>
+          <li>Does a higher star rating really mean lower energy use?</li>
+          <li>Does the screen technology make a difference?</li>
+          <li>What would a particular TV cost to run for my habits?</li>
+        </ul>
+        <h3>Guidelines for the visualisation story</h3>
+        <ul>
+          <li>Plain language: define terms such as kWh and star rating where they appear.</li>
+          <li>One message per chart, with a heading that states the question it answers.</li>
+          <li>One consistent colour code: Small, Medium and Large TVs keep the same colour on every chart, taken from the logo palette.</li>
+          <li>Always show how many models stand behind an average.</li>
+          <li>Finish with an action: a short recommendation and a calculator for the reader's own numbers.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="block tint" id="data">
+      <div class="narrow prose">
+        <h2>About the data</h2>
+
+        <h3>Data source</h3>
+        <p>The data is the register of televisions published by the Australian Government's <a href="https://www.energyrating.gov.au/about-us/gems-regulator/registered-appliance-and-equipment-data">Energy Rating program</a> (the GEMS regulator), which supplies registered appliance data and a <a href="https://reg.energyrating.gov.au/comparator/product_types/32/search/">television comparator</a>. The file used here is <code>tv_2026_09_28.csv</code>, exported on 28 September 2026 according to its file name. Each row is one registered TV model, with fields such as brand, screen size, screen technology, star rating and labelled energy consumption (kWh per year).</p>
+
+        <h3>Data processing</h3>
+        <p>The cleaning was first designed and tested in a KNIME workflow, and the website repeats the same steps in JavaScript every time a page loads:</p>
+        <div class="table-scroll">
+          <table class="simple">
+            <thead><tr><th>Step</th><th>What happens</th></tr></thead>
+            <tbody>
+              <tr><td>1. Read</td><td>The CSV is read in the browser, including quoted fields.</td></tr>
+              <tr><td>2. Clean text</td><td>Extra spaces are removed from brand, sold-in and availability fields (KNIME String Cleaner).</td></tr>
+              <tr><td>3. Merge names</td><td>Spelling variants of a brand are merged regardless of capital letters, and "Samsung Electronics" becomes "Samsung", so one brand is not counted several times (KNIME String Replacer, extended).</td></tr>
+              <tr><td>4. Filter</td><td>Only rows with Availability Status "Available" and Sold In including "Australia" are kept (two KNIME Row Filters; the second one is widened, see the limitations below).</td></tr>
+              <tr><td>5. Convert</td><td>Screen size in centimetres is divided by 2.54 to give inches (KNIME Expression).</td></tr>
+              <tr><td>6. Group</td><td>Small is under 43", Medium is 43" to 65" and Large is over 65" (KNIME Expression).</td></tr>
+              <tr><td>7. Remove unusable rows</td><td>Rows without a valid size, technology, brand or energy value are dropped, and the count is shown on the Televisions page.</td></tr>
+              <tr><td>8. Summarise</td><td>Counts and averages are calculated by brand, size group, star band and technology (KNIME GroupBy and Pivot).</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Privacy</h3>
+        <p>The register describes products, not people. It contains no names, addresses or other personal information. The website does not use cookies, analytics or accounts. Values typed into the calculator stay in the visitor's browser and are never sent anywhere. If a visitor loads a CSV with the file picker, it is read locally and, at most, kept in that browser tab's session storage until the tab is closed.</p>
+
+        <h3>Accuracy and limitations</h3>
+        <ul>
+          <li><strong>Labelled, not measured.</strong> Energy figures are standardised estimates from the label. Real use depends on brightness settings, viewing hours and standby habits.</li>
+          <li><strong>Star rating column.</strong> The register's <code>Star</code> field is empty for almost every model, so the <code>Star2</code> field is used instead.</li>
+          <li><strong>Self-reported register.</strong> Suppliers register their own models, so the data is only as accurate as those submissions.</li>
+          <li><strong>A snapshot.</strong> The file reflects one export date. Models come and go.</li>
+          <li><strong>Models, not sales.</strong> Counts show how many models exist, not how many TVs are sold.</li>
+          <li><strong>Multi-country listings.</strong> Most models are registered for Australia together with New Zealand and/or Fiji. They are kept because they are sold in Australia, but the register does not say how many are actually stocked here. The original KNIME filter matched "Australia" exactly and kept only the Australia-only listings, a much smaller group.</li>
+          <li><strong>Size groups are a simplification.</strong> The 43" and 65" cut-offs are a design choice. Different cut-offs would move some models between groups.</li>
+          <li><strong>Small samples.</strong> Averages for technologies or star bands with few models are less reliable. Hovering over a bar shows how many models it uses.</li>
+          <li><strong>Averages hide spread.</strong> A few unusual models can pull a mean up or down. The scatter plot shows the full spread.</li>
+          <li><strong>Correlation is not cause.</strong> Large TVs may differ from small ones in more ways than size alone.</li>
+        </ul>
+
+        <h3>Ethics</h3>
+        <ul>
+          <li><strong>Fairness to brands.</strong> The charts describe the register. They are not endorsements or criticism of any brand, and brand names appear only where the data requires them.</li>
+          <li><strong>Transparency.</strong> Every filter, conversion and cut-off is listed above, and the page shows how many rows were kept or dropped.</li>
+          <li><strong>Honest design.</strong> Bar charts start at zero, the same colours always mean the same size group, and sample sizes are shown.</li>
+          <li><strong>Not financial advice.</strong> The calculator gives an estimate from the numbers the visitor enters. Electricity prices differ, so it is a guide only.</li>
+          <li><strong>Accessibility.</strong> The site supports keyboard use, visible focus, text alternatives and sufficient colour contrast. Charts do not rely on colour alone because the legend, tooltips and labels carry the same information.</li>
+          <li><strong>Data licence and credit.</strong> The data belongs to the Australian Government's Energy Rating program and is credited above. Check the licence terms on the source site before reusing it.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="block" id="ai">
+      <div class="narrow prose">
+        <h2>AI declaration</h2>
+        <p>Generative AI was used to build this website. The assistant was <strong>Claude (Anthropic)</strong>. It helped draft the HTML structure, the CSS, the JavaScript for the data processing, the SVG charts and the calculator, and the written text. The data analysis plan and the KNIME workflow are the author's own work. The author is responsible for checking, understanding and being able to explain and modify all of the code and content submitted. The full reflection is in the project's <code>README.md</code>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div>© <span data-year>2026</span> · Tran Ngo Anh Khoi · COS30045 Data Visualisation, Swinburne University of Technology</div>
+      <div class="ai-note">Generative AI acknowledgement: this website was built with the help of a generative AI assistant (Claude by Anthropic). See the <a href="about.html#ai">AI declaration</a>.</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
