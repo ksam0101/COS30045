@@ -5,6 +5,8 @@ Author: **Tran Ngo Anh Khoi**
 
 A three-page website that tells the story of how much energy the televisions sold in Australia use, built from the Australian Energy Rating TV register.
 
+Website link: https://ksam0101.github.io/COS30045/
+
 ## Pages and structure
 
 ```
